@@ -17,7 +17,26 @@ export default async function handler(req, res) {
       }
     });
     const html = await response.text();
-    res.status(200).json({ html, status: response.status });
+
+    // 이미지와 텍스트를 순서대로 인터리빙
+    const blocks = [];
+    const regex = /(<img[^>]+src="(https?:\/\/[^"]+)"[^>]*>)|([^<]{10,})/g;
+    let match;
+    while ((match = regex.exec(html)) !== null) {
+      if (match[1]) {
+        const src = match[2];
+        if (!src.includes('icon') && !src.includes('logo') && !src.includes('btn') && !src.includes('static')) {
+          blocks.push({ type: 'image', url: src });
+        }
+      } else if (match[3]) {
+        const text = match[3].replace(/&[^;]+;/g, ' ').trim();
+        if (text.length > 5) {
+          blocks.push({ type: 'text', content: text });
+        }
+      }
+    }
+
+    res.status(200).json({ blocks: blocks.slice(0, 200) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
