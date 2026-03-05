@@ -18,13 +18,21 @@ export default async function handler(req, res) {
     });
     const html = await response.text();
 
-    // 본문 영역만 추출
-    const bodyMatch = html.match(/se-main-container[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<div class="[^"]*author/);
-    const bodyHtml = bodyMatch ? bodyMatch[1] : html;
-
-    // 이미지와 텍스트를 순서대로 추출
     const blocks = [];
-    const regex = /<img[^>]+src="(https:\/\/blogfiles[^"]+)"|<img[^>]+src="(https:\/\/postfiles[^"]+)"|>([\uAC00-\uD7A3a-zA-Z0-9,. ₩\n]{5,})</g;
-    let match;
-    while ((match = regex.exec(bodyHtml)) !== null) {
-      const imgUrl = matc
+    const imgRegex = /<img[^>]+src="(https:\/\/(?:blogfiles|postfiles)[^"]+)"/g;
+    let m;
+    while ((m = imgRegex.exec(html)) !== null) {
+      blocks.push({ type: 'image', url: m[1] });
+    }
+
+    const textRegex = />([\uAC00-\uD7A3][^<]{2,})</g;
+    while ((m = textRegex.exec(html)) !== null) {
+      const t = m[1].trim();
+      if (t.length > 3) blocks.push({ type: 'text', content: t });
+    }
+
+    res.status(200).json({ blocks: blocks.slice(0, 150) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
