@@ -31,7 +31,7 @@ export default async function handler(req, res) {
       if (t.length > 3) blocks.push({ type: 'text', content: t });
     }
 
-    res.status(200).json({ blocks: blocks.slice(0, 150) });
+    res.status(200).json({ blocks: blocks.slice(0, 150), htmlSample: html.slice(0, 3000) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
