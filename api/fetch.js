@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     const html = await response.text();
 
     const blocks = [];
-    const imgRegex = /<img[^>]+src="(https:\/\/(?:blogfiles|postfiles)[^"]+)"/g;
+    const imgRegex = /<img[^>]+src="(https:\/\/[^"]+\.(?:jpg|jpeg|png|gif|webp)[^"]*)"/gi;
     let m;
     while ((m = imgRegex.exec(html)) !== null) {
       blocks.push({ type: 'image', url: m[1] });
